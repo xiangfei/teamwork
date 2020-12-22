@@ -5,9 +5,9 @@ module Teamwork
       set_config_path "/teamwork/config/notify"
       create_and_watch_default_config []
 
-      def initialize(topic = "teamwork.notify")
+      def initialize
         super
-        @notify_topic = topic
+        @notify_topic = "teamwork.notify"
         start_consumer
       end
 

@@ -3,9 +3,9 @@
 require "bundler/setup"
 require "teamwork"
 #logger = Logger.new(STDOUT)
-logger = Logger.new("#{Teamwork.gem_root}/log/agent.log" , 1 , 1024000)
+logger = Logger.new("#{Teamwork.gem_root}/log/notify.log" , 1 , 1024000)
 logger.level = Logger::INFO
 Teamwork.logger = logger
-agent = Teamwork::Client::Agent.new
+notify = Teamwork::Client::Notify.new
 
-agent.join
+notify.join
