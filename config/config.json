@@ -13,5 +13,16 @@
      "etcd": { 
        "url": ["http://192.168.226.35:2379"] 
      }
+  },  
+  "notify": {
+     "mail": { 
+       "address": "smtp.163.com",
+       "port": 25,
+       "domain": "smtp.163.com",
+       "username": "xiangfei_2011@163.com",
+       "password": "1qaz@wsx",
+       "authentication": "plain",
+       "enable_starttls_auto": true        
+     }
   }
 }

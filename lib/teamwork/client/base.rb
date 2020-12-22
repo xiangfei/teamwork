@@ -15,6 +15,7 @@ module Teamwork
             end
         end
 
+        # 配置文件需要监听
         def set_config_path(path)
           @_config_path ||= begin
               Teamwork.task.mkdir_p path
@@ -29,13 +30,13 @@ module Teamwork
             end
         end
 
-        def create_and_watch_config(opts = {})
+        def create_and_watch_default_config(opts = {})
           if Teamwork.task.exists? config_path
             t = Teamwork.task.get config_path
             unless t
               create_config opts
             end
-          else
+          else 
             create_config opts
           end
           watch_config

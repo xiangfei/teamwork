@@ -8,7 +8,7 @@
 
 module Teamwork
   class << self
-    attr_writer :task, :logger, :message, :cache
+    attr_writer :task, :logger, :message, :cache , :consumer
 
     def gem_root
       @gem_root ||= Pathname.new(File.expand_path("..", __dir__))
@@ -37,6 +37,9 @@ module Teamwork
     def message
       #@message ||= Teamwork::Message::HttpMessage.new(config["message"]["http"])
       @message ||= Teamwork::Message::KafkaMessage.new(config["message"]["kafka"])
+    end
+    def consumer
+      @consumer ||= Teamwork::Consumer::Kafka.new(config["message"]["kafka"])
     end
   end
 end
