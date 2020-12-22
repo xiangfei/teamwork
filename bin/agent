@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+#$:.unshift "../lib"
+require "bundler/setup"
+require "teamwork"
+#logger = Logger.new(STDOUT)
+logger = Logger.new("#{Teamwork.gem_root}/log/collect.log" , 1 , 1024000)
+logger.level = Logger::INFO
+Teamwork.logger = logger
+agent = Teamwork::Client::Agent.new
+
+agent.join
