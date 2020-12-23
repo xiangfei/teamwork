@@ -3,7 +3,7 @@ module Teamwork
     class Base
       class << self
         def alarm_config
-          Teamwork::Task::Alarm.alarm_config
+          Teamwork::Client::Alarm.config
         end
 
         def find(remarked_id)
@@ -11,19 +11,20 @@ module Teamwork
           instance.full_message
         end
 
-        def record_alarm(taskid, flag, value)
-          instance = new taskid, flag, value
+        def record_alarm(taskid, expect, real)
+          instance = new taskid, expect, real
           instance.record_alarm
           instance
         end
       end
-      attr_reader :taskid, :msg, :monitor_name
+      attr_reader :taskid, :msg, :monitor_name 
       # taskid 收集任务id   expected 期望结果 ,  real执行结果
       def initialize(taskid, expected, real)
         @taskid = taskid
         @real = real
         @expected = expected
-        @msg = Teamwork.cache.get(taskid)
+        @msg = Teamwork.cache.get(taskid) 
+        Teamwork.logger.info "msg  #{@msg} taskid #{taskid}  expect #{expected} real #{real}"
         @monitor_name = @msg["monitor_name"]
       end
 
@@ -105,9 +106,9 @@ module Teamwork
 
       def detail
         if alarm?
-          @msg.merge({ message: message, status: "problem", alarm_count: alarm_times, started_at: started_at, timestamp: Time.now.to_i, time: Time.now.to_i })
+          @msg.merge({ message: message, status: "problem", alarm_count: alarm_times, started_at: started_at, time: Time.now.to_i })
         else
-          @msg.merge({ message: message, status: "resolved", recovered_count: recovered_times, timestamp: Time.now.to_i, time: Time.now.to_i })
+          @msg.merge({ message: message, status: "resolved", recovered_count: recovered_times, time: Time.now.to_i })
         end
       end
 

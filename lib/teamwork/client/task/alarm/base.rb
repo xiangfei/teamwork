@@ -1,7 +1,7 @@
 module Teamwork
   module Client
-    class Alarm
-      module Agent
+    module Task
+      module Alarm
         # base class , define , kafka topic
         # 需要在每一台机器周期性执行任务
         # all alarm , first recover  发送到告警记录,
@@ -30,44 +30,48 @@ module Teamwork
             @collecttaskid = collecttaskid
             @key = key
             @expect = value
+            if alarm_class.is_a? String
+              @alarm_class = eval(alarm_class)
+            else
+              @alarm_class = alarm_class
+            end
           end
 
           def process(ops = {})
-           # raise "abstract  method cannot run" 
+            # raise "abstract  method cannot run"
           end
 
           def record_alarm
-            @al = alarm_class.record_alarm real, expect, cache
+            @al = @alarm_class.record_alarm @collecttaskid, expect, real
           end
 
           def run(args = {})
             begin
               record_alarm
+              process_alarm
               process args
               Teamwork.cache.set self.class.taskid, msg
             rescue => e
               Teamwork.logger.error("handler alarm failed  #{e.message}")
             end
-            sendmsg if self.class.send_msg
           end
 
-          def first_alarm
+          def process_alarm
             if @al.first_alarm?
-            end
-          end
-
-          def first_recover
-            if @al.first_recover?
-            end
-          end
-
-          def config_alarm?
-            if @al.config_alarm?
-            end
-          end
-
-          def many_recover?
-            if @al.many_recover?
+              Teamwork.message.deliver_message @al.detail, topic: "teamwork.historyalarm"
+              Teamwork.message.deliver_message @al.detail, topic: "teamwork.realalarm"
+              Teamwork.message.deliver_message @al.detail, topic: "teamwork.notify"
+            elsif @al.config_alarm?
+              Teamwork.message.deliver_message @al.detail, topic: "teamwork.historyalarm"
+              Teamwork.message.deliver_message @al.detail, topic: "teamwork.notify"
+            elsif @al.first_recovered?
+              Teamwork.message.deliver_message @al.detail, topic: "teamwork.historyalarm"
+              Teamwork.message.deliver_message @al.detail, topic: "teamwork.realalarm"
+              Teamwork.message.deliver_message @al.detail, topic: "teamwork.notify"
+            elsif @al.many_alarm?
+              Teamwork.message.deliver_message @al.detail, topic: "teamwork.historyalarm"
+            elsif @al.many_recovered?
+              Teamwork.logger.info "alarm  #{@al.detail} is not an alarm"
             end
           end
 

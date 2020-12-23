@@ -4,7 +4,6 @@ module Teamwork
       module Collect
         # 代理任务taskid, topic 固定, 处理流程收集消息,缓存到cache表
         class Base
-          include Aspect4r
           class << self
             attr_reader :_taskinfo
 
@@ -14,12 +13,16 @@ module Teamwork
 
             #只做收集,执行失败放告警任务
             def task_info
-              @_taskinfo ||= { topic: "teamwork.collect.normal", send: true, task_id: self.name.downcase.gsub("::", "_") }
+              @_taskinfo ||= { topic: "teamwork.collect.normal", send: true, task_id: self.name.downcase.gsub("::", "_"), monitor_name: self.name.downcase.gsub("::", "_") }
             end
 
             # 全局task_id, 用来创建默认collect 任务
             def task_id
               task_info[:task_id]
+            end
+
+            def monitor_name
+              task_info[:monitor_name]
             end
 
             def send
@@ -44,13 +47,14 @@ module Teamwork
           end
 
           def process(ops = {})
-            raise "abstract  method cannot run"
+            # raise "abstract  method cannot run"
           end
 
           def run(args = {})
             begin
               @_m.merge! self.class.basemsg
-              @_m["task_id"] =  args["task_id"] || self.class.task_id
+              @_m["task_id"] = args["task_id"] || self.class.task_id
+              @_m["monitor_name"] = args["monitor_name"] || self.class.monitor_name
               process args
               @_m["time"] = Time.now.to_i
               Teamwork.cache.set task_id, @_m
@@ -61,20 +65,20 @@ module Teamwork
           end
 
           def msg
-            return self
+            @_m
           end
 
-          def []=(k, v)
-            @_m[k] = v
-          end
+         # def []=(k, v)
+         #   @_m[k] = v
+         # end
 
-          def merge!(opts = {})
-            @_m.merge! opts
-          end
+        #  def merge!(opts = {})
+        #    @_m.merge! opts
+        #  end
 
-          def merge(opts = {})
-            @_m.merge opts
-          end
+       #   def merge(opts = {})
+       #     @_m.merge opts
+       #   end
 
           private
 
