@@ -50,11 +50,12 @@ module Teamwork
           def run(args = {})
             begin
               @_m.merge! self.class.basemsg
+              @_m["task_id"] =  args["task_id"] || self.class.task_id
               process args
               @_m["time"] = Time.now.to_i
               Teamwork.cache.set task_id, @_m
             rescue StandardError => e
-              Teamwork.logger.error("run task failed cls: #{self.class} , taskid: #{taskid} , message:  #{e.message}")
+              Teamwork.logger.error("run task failed cls: #{self.class} , taskid: #{task_id} , message:  #{e.message}")
             end
             sendmsg if self.class.send
           end

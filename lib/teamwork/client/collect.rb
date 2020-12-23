@@ -33,8 +33,9 @@ module Teamwork
             Timeout.timeout timeout do
               cls.s.send hash_task["method"], hash_task["args"]
             end
-            Teamwork.logger.debug "start handler  once task #{title}  #{value}"
+            Teamwork.logger.debug "start handler collect once task #{title}  success"
           rescue => e
+            
             Teamwork.logger.error "处理任务失败 #{title} #{value} error message #{e.message}"
           end
         end
