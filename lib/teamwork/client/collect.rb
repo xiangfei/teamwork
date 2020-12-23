@@ -13,7 +13,7 @@ module Teamwork
       set_queue Teamwork::Utils.mac
       set_task_path "/teamwork/task/collect/#{Teamwork::Utils.mac}"
 
-      create_collect_task Teamwork::Client::Collect::CpuUsage.task_id, { :time => 20, :opt => "every", :method => "run", :cls => "Teamwork::Client::Collect::CpuUsage", :args => {} }
+      create_collect_task Teamwork::Client::Task::Collect::CpuUsage.task_id, { :time => 20, :opt => "every", :method => "run", :cls => "Teamwork::Client::Task::Collect::CpuUsage", :args => {} }
 
       def initialize
         super
