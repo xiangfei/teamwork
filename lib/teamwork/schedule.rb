@@ -34,7 +34,7 @@ module Teamwork
           return
         end
         Teamwork.logger.info "start task #{@producers.map do |x| x[0] end}"
-        @rufus_task = Rufus::Scheduler.new
+        @rufus_task = Rufus::Scheduler.new(max_work_threads: 40)
         @producers.each do |method, args, block|
           cron = args[:cron]
           every = args[:every]

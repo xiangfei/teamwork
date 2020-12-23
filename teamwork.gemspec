@@ -38,7 +38,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "ruby-kafka" , "~>1.3.0"
 
 
-
+  spec.add_dependency "rbtrace"   , "~>0.4.14"
+  
   spec.add_development_dependency "bundler", "~> 1.17"
   spec.add_development_dependency "rake", "~> 10.0"
 end

@@ -11,17 +11,30 @@ module Teamwork
             task_info.merge! opts
           end
 
+          #只做收集,执行失败放告警任务
           def task_info
-            @_taskinfo ||= { topic: "teamwork.collect.normal", send: true }
+            @_taskinfo ||= { topic: "teamwork.collect.normal", send: true, task_id: self.name.downcase.gsub("::", "_") }
+          end
+
+          # 全局task_id, 用来创建默认collect 任务
+          def task_id
+            task_info[:task_id]
+          end
+
+          def send
+            task_info[:send]
+          end
+
+          def topic
+            task_info[:topic]
           end
 
           def s
-            #@instance ||= new
-            new
+            @instance ||= new
           end
 
           def basemsg
-            Teamwork::Client::Agent::Base.basemsg
+            @basemsg ||= { "task_id" => task_id, "ip" => Teamwork::Utils.ip, "mac" => Teamwork::Utils.mac, "hostname" => Teamwork::Utils.hostname }
           end
         end
 
@@ -36,23 +49,13 @@ module Teamwork
         def run(args = {})
           begin
             @_m.merge! self.class.basemsg
-            set_task_info args
             process args
             @_m["time"] = Time.now.to_i
-            Teamwork.cache.set taskid, @_m
+            Teamwork.cache.set task_id, @_m
           rescue StandardError => e
             Teamwork.logger.error("run task failed cls: #{self.class} , taskid: #{taskid} , message:  #{e.message}")
           end
-          sendmsg if self.class.task_info[:send]
-        end
-
-        def set_task_info(args)
-          if args["taskid"]
-            self.taskid = args["taskid"]
-            @_m["taskid"] = args["taskid"]
-          else
-            raise "invalid  args #{args} missing taskid"
-          end
+          sendmsg if self.class.send
         end
 
         def msg
@@ -71,15 +74,11 @@ module Teamwork
           @_m.merge opts
         end
 
-        def taskid
-          @_taskid
-        end
-
-        def taskid=(value)
-          @_taskid = value
-        end
-
         private
+
+        def task_id
+          @_m["task_id"]
+        end
 
         def sendmsg
           unless @_m
@@ -87,11 +86,12 @@ module Teamwork
             return
           end
           begin
-            Teamwork.message.deliver_message @_m, topic: self.class.task_info[:topic]
+            Teamwork.message.deliver_message @_m, topic: self.class.topic
           rescue => e
-            Teamwork.logger.error "msg  class #{self.class} , topic #{self.class.task_info[:topic]}  msg: #{@_m} error #{e.message}"
+            Teamwork.logger.error "msg  class #{self.class} , topic #{self.class.topic}  msg: #{@_m} error #{e.message}"
           end
         end
+
       end
     end
   end

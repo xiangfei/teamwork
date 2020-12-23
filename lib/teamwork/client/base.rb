@@ -36,7 +36,7 @@ module Teamwork
             unless t
               create_config opts
             end
-          else 
+          else
             create_config opts
           end
           watch_config
@@ -129,12 +129,12 @@ module Teamwork
       end
 
       def join
-        Thread.new do
-          while @running
-            sleep 300
-            GC.start
-          end
-        end
+        #Thread.new do
+        #while @running
+        #  sleep 300
+        #GC.start
+        #end
+        #end
         while @running
           sleep 1
         end

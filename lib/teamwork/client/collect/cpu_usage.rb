@@ -1,9 +1,8 @@
 module Teamwork
   module Client
-    class Agent
+    class Collect
       class CpuUsage < Base
-        set_task_id "teamwork_client_agent_cpu_usage"
-        #set_task_info topic: "xcxx", send: false
+        set_task_info topic: "teamwork.collect.normal", send: true, task_id: "teamwork_client_collect_cpu_usage"
 
         def process(args = {})
           _, cpu_usage = Teamwork::Utils.linux_command("top -bn 1 | awk '/Cpu/ {print $2}'")
