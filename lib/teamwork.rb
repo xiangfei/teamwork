@@ -2,13 +2,12 @@
   json
   rufus-scheduler
   zeitwerk
-  aspect4r
   teamwork/core_ext
 ].each(&method(:require))
 
 module Teamwork
   class << self
-    attr_writer :task, :logger, :message, :cache , :consumer
+    attr_writer :task, :logger, :message, :cache, :consumer
 
     def gem_root
       @gem_root ||= Pathname.new(File.expand_path("..", __dir__))
@@ -22,7 +21,7 @@ module Teamwork
     end
 
     def task
-      @task ||= Teamwork::Task::Zk.new(config["task"]["zk"]) 
+      @task ||= Teamwork::Task::Zk.new(config["task"]["zk"])
       #@task ||= Teamwork::Task::Etcd.new(config["task"]["etcd"])
     end
 
@@ -38,10 +37,25 @@ module Teamwork
       #@message ||= Teamwork::Message::HttpMessage.new(config["message"]["http"])
       @message ||= Teamwork::Message::KafkaMessage.new(config["message"]["kafka"])
     end
+
     def consumer
       @consumer ||= Teamwork::Consumer::Kafka.new(config["message"]["kafka"])
+    end
+
+    def loader
+      @loader ||= begin
+          l = Zeitwerk::Loader.for_gem
+          l.enable_reloading
+          l
+        end
+    end
+
+    def reload
+      loader.reload
+      zookeeper = nil
+      logger.info "reload Teamwork class module finish"
     end
   end
 end
 
-Zeitwerk::Loader.for_gem.tap(&:setup)
+Teamwork.loader.setup

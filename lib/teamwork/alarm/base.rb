@@ -11,21 +11,22 @@ module Teamwork
           instance.full_message
         end
 
-        def record_alarm(taskid, expect, real)
-          instance = new taskid, expect, real
+        def record_alarm(taskid, expect, real, severity = "level_high", message = nil)
+          instance = new taskid, expect, real, severity, message
           instance.record_alarm
           instance
         end
       end
-      attr_reader :taskid, :msg, :monitor_name 
+      attr_reader :taskid, :msg, :monitor_name
       # taskid 收集任务id   expected 期望结果 ,  real执行结果
-      def initialize(taskid, expected, real)
+      def initialize(taskid, expected, real, severity = "level_high", message = nil)
         @taskid = taskid
         @real = real
         @expected = expected
-        @msg = Teamwork.cache.get(taskid) 
-        Teamwork.logger.info "msg  #{@msg} taskid #{taskid}  expect #{expected} real #{real}"
-        @monitor_name = @msg["monitor_name"]
+        @severity = severity
+        @msg = Teamwork.cache.get(taskid)
+        @monitor_name = @msg["monitor_name"] 
+        @message = message || "#{@moniter_name} alarm value #{@expected}  current #{@real}"
       end
 
       def record_alarm
@@ -96,19 +97,12 @@ module Teamwork
 
       alias :recovered_count :recovered_times
 
-      def message
-        if alarm?
-          "problem: #{@moniter_name} alarm value #{@expected}  current #{@real}"
-        else
-          "resolved: #{@monitor_name} alarm value #{@expected}  current #{@real}"
-        end
-      end
 
       def detail
         if alarm?
-          @msg.merge({ message: message, status: "problem", alarm_count: alarm_times, started_at: started_at, time: Time.now.to_i })
+          @msg.merge({ "message" => @message, "status" => "problem", "alarm_count" => alarm_times, "started_at" => started_at, "time" => Time.now.to_i, "severity" => @severity  })
         else
-          @msg.merge({ message: message, status: "resolved", recovered_count: recovered_times, time: Time.now.to_i })
+          @msg.merge({ "message" => @message, "status" => "resolved", "recovered_count" => recovered_times, "time" => Time.now.to_i, "severity" =>  @severity })
         end
       end
 

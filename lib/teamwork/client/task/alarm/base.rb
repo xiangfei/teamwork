@@ -8,7 +8,6 @@ module Teamwork
         # 匹配条件的告警发邮件,放入实时告警
         # 所有消息放大数据,等格式。
         class Base
-          include Aspect4r
           class << self
             attr_reader :_alarms
 
@@ -25,11 +24,13 @@ module Teamwork
 
           attr_reader :taskid
 
-          def initialize(collecttaskid, key, value, alarm_class)
-            @taskid = "#alarm_#{collecttaskid}"
+          def initialize(collecttaskid, key, value, alarm_class, severity = "level_high", message = "message  handler problem")
+            @taskid = "alarm__#{key}__#{collecttaskid}"
             @collecttaskid = collecttaskid
             @key = key
             @expect = value
+            @severity = severity
+            @message = message
             if alarm_class.is_a? String
               @alarm_class = eval(alarm_class)
             else
@@ -42,7 +43,7 @@ module Teamwork
           end
 
           def record_alarm
-            @al = @alarm_class.record_alarm @collecttaskid, expect, real
+            @al = @alarm_class.record_alarm @collecttaskid, expect, real, severity, message
           end
 
           def run(args = {})
@@ -50,7 +51,7 @@ module Teamwork
               record_alarm
               process_alarm
               process args
-              Teamwork.cache.set self.class.taskid, msg
+              Teamwork.cache.set taskid, msg
             rescue => e
               Teamwork.logger.error("handler alarm failed  #{e.message}")
             end
@@ -58,21 +59,25 @@ module Teamwork
 
           def process_alarm
             if @al.first_alarm?
-              Teamwork.message.deliver_message @al.detail, topic: "teamwork.historyalarm"
-              Teamwork.message.deliver_message @al.detail, topic: "teamwork.realalarm"
-              Teamwork.message.deliver_message @al.detail, topic: "teamwork.notify"
+              Teamwork.message.deliver_message msg, topic: "teamwork.historyalarm"
+              Teamwork.message.deliver_message msg, topic: "teamwork.realalarm"
+              Teamwork.message.deliver_message msg, topic: "teamwork.notify"
             elsif @al.config_alarm?
-              Teamwork.message.deliver_message @al.detail, topic: "teamwork.historyalarm"
-              Teamwork.message.deliver_message @al.detail, topic: "teamwork.notify"
+              Teamwork.message.deliver_message msg, topic: "teamwork.historyalarm"
+              Teamwork.message.deliver_message msg, topic: "teamwork.notify"
             elsif @al.first_recovered?
-              Teamwork.message.deliver_message @al.detail, topic: "teamwork.historyalarm"
-              Teamwork.message.deliver_message @al.detail, topic: "teamwork.realalarm"
-              Teamwork.message.deliver_message @al.detail, topic: "teamwork.notify"
+              Teamwork.message.deliver_message msg, topic: "teamwork.historyalarm"
+              Teamwork.message.deliver_message msg, topic: "teamwork.realalarm"
+              Teamwork.message.deliver_message msg, topic: "teamwork.notify"
             elsif @al.many_alarm?
-              Teamwork.message.deliver_message @al.detail, topic: "teamwork.historyalarm"
+              Teamwork.message.deliver_message msg, topic: "teamwork.historyalarm"
             elsif @al.many_recovered?
               Teamwork.logger.info "alarm  #{@al.detail} is not an alarm"
             end
+          end
+
+          def msg
+            @al.detail.merge! "alarm_task_id" => @taskid
           end
 
           def cache
@@ -89,6 +94,14 @@ module Teamwork
 
           def expect
             @expect
+          end
+
+          def severity
+            @severity
+          end
+
+          def message
+            @message
           end
         end
       end

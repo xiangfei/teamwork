@@ -47,7 +47,7 @@ module Teamwork
           end
 
           def process(ops = {})
-            # raise "abstract  method cannot run"
+            raise "abstract  method cannot run"
           end
 
           def run(args = {})
@@ -62,23 +62,28 @@ module Teamwork
               Teamwork.logger.error("run task failed cls: #{self.class} , taskid: #{task_id} , message:  #{e.message}")
             end
             sendmsg if self.class.send
+            alarms = args["alarms"] || []
+            trigger_alarms alarms
           end
 
           def msg
             @_m
           end
 
-         # def []=(k, v)
-         #   @_m[k] = v
-         # end
-
-        #  def merge!(opts = {})
-        #    @_m.merge! opts
-        #  end
-
-       #   def merge(opts = {})
-       #     @_m.merge opts
-       #   end
+          def trigger_alarms(alarms = [])
+            if alarms.empty?
+              Teamwork.logger.info " #{task_id} no need to do alarm skip"
+            end
+            alarms.each do |alarm|
+              alarm_class = alarm["alarm_class"]
+              severity = alarm["severity"]
+              message = alarm["message"]
+              key = alarm["key"]
+              value = alarm["value"]
+              alarm =Teamwork::Client::Task::Alarm::Base.new task_id, key, value, alarm_class, severity, message 
+              alarm.run
+            end
+          end
 
           private
 

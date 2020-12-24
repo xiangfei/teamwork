@@ -5,6 +5,17 @@ module Teamwork
         class CpuUsage < Base
           set_task_info topic: "teamwork.collect.normal", send: true, task_id: "teamwork_client_task_collect_cpu_usage"
 
+          #include Teamwork::Callback
+          #before :process, :set_meta
+          #after :process , :trigger_alarm
+          def set_meta
+            puts "meta"
+          end
+
+          def trigger_alarm
+            puts "trigger_alarm"
+          end
+           
           def process(args = {})
             _, cpu_usage = Teamwork::Utils.linux_command("top -bn 1 | awk '/Cpu/ {print $2}'")
             msg["cpu_usage"] = cpu_usage.first.to_i
