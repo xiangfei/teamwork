@@ -52,6 +52,7 @@ module Teamwork
       def fetch_and_restart_scheduler
         @rufus_scheduler.stop
         @rufus_scheduler.remove_all
+        Teamwork::Client::Task::Collect::Base.clean_tasks
         Teamwork.task.children(self.class.task_path).each do |path|
           hash_task = Teamwork.task.get "#{self.class.task_path}/#{path}"
           opt = hash_task["opt"]
@@ -59,7 +60,7 @@ module Teamwork
           when "every"
             @rufus_scheduler.add path, timeout: hash_task["time"], every: hash_task["time"] do
               cls = eval(hash_task["cls"])
-              cls.s.send hash_task["method"], hash_task["args"]
+              cls.find(path).send hash_task["method"], hash_task["args"]
             end
           when "cron"
             raise "unsupported type #{opt}"

@@ -5,7 +5,7 @@ module Teamwork
         # 代理任务taskid, topic 固定, 处理流程收集消息,缓存到cache表
         class Base
           class << self
-            attr_reader :_taskinfo
+            attr_reader :_taskinfo, :_tasks
 
             def set_task_info(opts = {})
               task_info.merge! opts
@@ -33,12 +33,30 @@ module Teamwork
               task_info[:topic]
             end
 
-            def s
-              @instance ||= new
-            end
-
             def basemsg
               @basemsg ||= { "task_id" => task_id, "ip" => Teamwork::Utils.ip, "mac" => Teamwork::Utils.mac, "hostname" => Teamwork::Utils.hostname }
+            end
+
+            def find(taskid)
+              tasks[taskid] ||= new
+            end
+
+            def tasks
+              @_tasks ||= {}
+            end
+
+            def clean_tasks
+              children.each do |c|
+                c.tasks.clear
+              end
+            end
+
+            def inherited(subclass)
+              children << subclass
+            end
+
+            def children
+              @_children ||= []
             end
           end
 
@@ -80,7 +98,7 @@ module Teamwork
               message = alarm["message"]
               key = alarm["key"]
               value = alarm["value"]
-              alarm =Teamwork::Client::Task::Alarm::Base.new task_id, key, value, alarm_class, severity, message 
+              alarm = Teamwork::Client::Task::Alarm::Base.new task_id, key, value, alarm_class, severity, message
               alarm.run
             end
           end
