@@ -25,6 +25,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  # base
   spec.add_dependency "zeitwerk", "~> 2.4.2"
   spec.add_dependency "rufus-scheduler", "~> 3.6.0"
   spec.add_dependency "json", "~> 2.4.1"
@@ -39,8 +40,14 @@ Gem::Specification.new do |spec|
   spec.add_dependency "ruby-kafka" , "~>1.3.0"
 
 
+  # performance
   spec.add_dependency "rbtrace"   , "~>0.4.14"
-  
+
+  # cli base 
+  spec.add_development_dependency  "dry-cli" , "~> 0.6"  
+
+  # devlopment  required
   spec.add_development_dependency "bundler", "~> 1.17"
   spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "irb"  , "~> 1.3.0"
 end

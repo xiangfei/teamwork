@@ -52,7 +52,7 @@ module Teamwork
 
     def reload
       loader.reload
-      zookeeper = nil
+      #zookeeper = nil
       logger.info "reload Teamwork class module finish"
     end
   end
