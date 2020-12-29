@@ -17,6 +17,6 @@
 /pids/*
 !/log/.keep
 !/pids/.keep
-/messages/
+/messages/*
 !/messages/.keep
 /.ruby-version

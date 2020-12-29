@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 module Teamwork
   module Schedule
+    # rufus task
     class RufusTask
       attr_reader :rufus_task, :producers
 
@@ -30,10 +33,10 @@ module Teamwork
 
       def start
         if @producers.empty?
-          Teamwork.logger.warn "no task to run"
+          Teamwork.logger.warn 'no task to run'
           return
         end
-        Teamwork.logger.info "start task #{@producers.map do |x| x[0] end}"
+        Teamwork.logger.info "start task #{@producers.map { |x| x[0] }}"
         @rufus_task = Rufus::Scheduler.new(max_work_threads: 40)
         @producers.each do |method, args, block|
           cron = args[:cron]
@@ -44,14 +47,14 @@ module Teamwork
           elsif args[:every]
             @rufus_task.send :every, every, cal_args, &block
           else
-            Teamwork.logger.error "目前只支持cron and every 2种格式 #{cal_args}"
+            Teamwork.logger.error "current only support cron and every mode #{cal_args}"
           end
         end
       end
 
-      # 等待所有任务完成在关闭
+      # wait for all jobs finish
       def stop
-        Teamwork.logger.info "stop task #{@producers.map do |x| x[0] end}"
+        Teamwork.logger.info "stop task #{@producers.map { |x| x[0] }}"
         @rufus_task&.shutdown(:wait)
       end
 
@@ -62,19 +65,20 @@ module Teamwork
       end
     end
 
+    # no doc
     class RufusLockTask < RufusTask
-      def initialize(logger: Teamwork.logger, key: "zklock")
+      def initialize(logger: Teamwork.logger, key: 'zklock')
         super(logger: logger)
         @lock = Teamwork.task.lock(key)
       end
 
       def start
         if @producers.empty?
-          Teamwork.logger.info "no task to run"
+          Teamwork.logger.info 'no task to run'
           return
         end
-        Teamwork.logger.info "start task #{@producers.map do |x| x[0] end} "
-        @rufus_task = Rufus::Scheduler.new(:trigger_lock => @lock)
+        Teamwork.logger.info "start task #{@producers.map { |x| x[0] }} "
+        @rufus_task = Rufus::Scheduler.new(trigger_lock: @lock)
         @producers.each do |method, args, block|
           cron = args[:cron]
           every = args[:every]

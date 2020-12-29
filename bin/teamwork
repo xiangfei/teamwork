@@ -1,36 +1,29 @@
-#!/usr/bin/env ruby
-require "bundler/setup"
-require "teamwork"
+#! /usr/bin/env ruby
 
-require "dry/cli"
+# frozen_string_literal: true
 
+require 'bundler/setup'
+require 'teamwork'
+
+require 'dry/cli'
+
+# no doc
 module Teamwork
+  # no doc
   module Commands
     extend Dry::CLI::Registry
 
-    register "version", Version, aliases: ["v", "-v", "--version"]
-    register "console", Console
+    register 'version', Version, aliases: ['v', '-v', '--version']
+    register 'console', Console
 
-    ["collect", "master", "service", "notify"].each do |client|
+    %w[collect master service notify].each do |client|
       register client do |prefix|
-        prefix.register "start", Object.const_get("Teamwork::Commands::#{client.capitalize}::Start")
-        prefix.register "stop", Object.const_get("Teamwork::Commands::#{client.capitalize}::Stop")
+        prefix.register 'start', Object.const_get("Teamwork::Commands::#{client.capitalize}::Start")
+        prefix.register 'stop', Object.const_get("Teamwork::Commands::#{client.capitalize}::Stop")
 
-        prefix.register "status", Object.const_get("Teamwork::Commands::#{client.capitalize}::Status")
+        prefix.register 'status', Object.const_get("Teamwork::Commands::#{client.capitalize}::Status")
       end
     end
-
-    #   register "collect" do |prefix|
-    #     prefix.register "start", Collect::Start
-    #     prefix.register "stop", Collect::Stop
-    #     prefix.register "status", Collect::Status
-    #   end
-
-    #   register "master" do |prefix|
-    #     prefix.register "start", Master::Start
-    #     prefix.register "stop", Master::Stop
-    #     prefix.register "status", Master::Status
-    #   end
   end
 end
 

@@ -1,22 +1,25 @@
+# frozen_string_literal: true
+
 module Teamwork
+  # no doc
   module Callback
     def self.included(base)
       base.extend ClassMethods
       base.initialize_included_features
     end
 
+    # no doc
     module ClassMethods
       def initialize_included_features
-        @callbacks = Hash.new
-        [:before, :after, :around].each { |filter| @callbacks[filter] = Hash.new { |h, k| h[k] = [] } }
+        @callbacks = {}
+        %i[before after around].each { |filter| @callbacks[filter] = Hash.new { |h, k| h[k] = [] } }
 
         class << self
-          attr_accessor :callbacks
-          attr_accessor :setting_callback
+          attr_accessor :callbacks, :setting_callback
         end
       end
 
-      def is_a_callback?(method)
+      def a_callback?(method)
         registered_methods.include?(method)
       end
 
@@ -45,19 +48,15 @@ module Teamwork
       end
 
       def method_added(method)
-        if !setting_callback
-          redefine_method(method) if is_a_callback?(method)
-        end
+        redefine_method(method) unless setting_callback && a_callback?(method) 
       end
 
       def objectify_and_remove_method(method)
-        if method_defined?(method.to_sym)
-          original = instance_method(method.to_sym)
-          remove_method(method.to_sym)
-          original
-        else
-          nil
-        end
+        return unless method_defined?(method.to_sym)
+
+        original = instance_method(method.to_sym)
+        remove_method(method.to_sym)
+        original
       end
 
       def redefine_method(original_method)
@@ -67,7 +66,7 @@ module Teamwork
         define_method(original_method.to_sym) do |*args, &block|
           trigger_callbacks(original_method, :before)
           return_value = trigger_around_callbacks(self.class.callbacks[:around][original_method.to_sym].first) do
-            original.bind(self).call(*args, &block) if original
+            original&.bind(self)&.call(*args, &block)
           end
           trigger_callbacks(original_method, :after)
           return_value
@@ -83,6 +82,7 @@ module Teamwork
 
     def trigger_around_callbacks(callback_method, &block)
       return block.call unless callback_method # there's no around callbacks, just call the original method
+
       if callback_method.next
         # outer around callbacks recurse until there's no more 'next'
         send(callback_method) { trigger_around_callbacks(callback_method.next) { block.call } }
