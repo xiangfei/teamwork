@@ -13,15 +13,19 @@ module Teamwork
         Teamwork::Queue::Zk.new(zk, name)
       end
 
+      def lock(name)
+        Teamwork::Lock::Zk.new(zk, name)
+      end
+
       def children(path)
         zk.children path
       end
 
-      def create(path ,value= "")
+      def create(path, value = "")
         zk.create path, value
       end
 
-      def temp_create(path , value="")
+      def temp_create(path, value = "")
         zk.create path, value, mode: :ephemeral
       end
 
@@ -38,8 +42,13 @@ module Teamwork
       end
 
       def get(path)
-        s ,t =  zk.get path
+        s, t = zk.get path
         JSON.load(s)
+      end
+
+      def raw_get(path)
+        s, t = zk.get path
+        return s
       end
 
       def delete(node)

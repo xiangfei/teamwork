@@ -1,5 +1,6 @@
 module Teamwork
   #  单机周期性任务,不需要抢占 , 一次性任务kafka获取 , 流程如此。数据会丢失
+  #  alarm 任务合并到collect 任务,可以拆分出来
   module Client
     class Alarm < Base
       class << self

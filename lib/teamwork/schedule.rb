@@ -63,9 +63,9 @@ module Teamwork
     end
 
     class RufusLockTask < RufusTask
-      def initialize(logger: Teamwork.logger, lock: "zklock")
+      def initialize(logger: Teamwork.logger, key: "zklock")
         super(logger: logger)
-        @lock = Teamwork.locker.new(lock)
+        @lock = Teamwork.task.lock(key)
       end
 
       def start
