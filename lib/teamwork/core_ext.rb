@@ -62,6 +62,16 @@ class Array
   end
 end
 
+# sym
 class Symbol
   attr_accessor :next
+end
+
+# object extension
+class Object
+  def try(method, *args, &block)
+    send(method, *args, &block)
+  rescue StandardError
+    nil
+  end
 end

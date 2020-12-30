@@ -11,16 +11,16 @@ module Teamwork
         # 所有消息放大数据,等格式。
         class Base
           class << self
-            attr_reader :_alarms
-
             def find(taskid)
-              @_alarms ||= {}
-              @_alarms[taskid] || new(taskid)
+              alarms[taskid] || new(taskid)
             end
 
             def destroy(taskid)
-              @_alarms ||= {}
-              @_alarms.delete taskid
+              alarms.delete taskid
+            end
+
+            def alarms
+              @alarms ||= {}
             end
           end
 
