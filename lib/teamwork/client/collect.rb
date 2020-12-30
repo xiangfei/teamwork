@@ -62,7 +62,7 @@ module Teamwork
           case opt
           when 'every'
             @rufus_scheduler.add path, timeout: hash_task['time'], every: hash_task['time'] do
-              cls = Object.const_get(hash_task['cls'])
+              cls = Object.const_get(hash_task['cls']) 
               cls.find(path).send hash_task['method'], hash_task['args']
             end
           # when 'cron'

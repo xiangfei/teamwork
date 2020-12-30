@@ -25,7 +25,7 @@ module Teamwork
 
       set_task_path "/teamwork/task/alarm/#{Teamwork::Utils.mac}"
 
-      create_and_watch_default_config first: [1, 2, 3], repeat: 10
+      #create_and_watch_default_config first: [1, 2, 3], repeat: 10
 
       # 只做收集任务
       def initialize
