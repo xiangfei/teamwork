@@ -7,32 +7,28 @@ module Teamwork
         # 代理任务taskid, topic 固定, 处理流程收集消息,缓存到cache表
         class Base
           class << self
-            attr_reader :_taskinfo, :_tasks
-
-            def set_task_info(opts = {})
-              task_info.merge! opts
-            end
+            attr_writer :taskinfo, :tasks
 
             # 只做收集,执行失败放告警任务
-            def task_info
-              @_taskinfo ||= { topic: 'teamwork.collect.normal', send: true, task_id: name.downcase.gsub('::', '_'), monitor_name: name.downcase.gsub('::', '_') }
+            def taskinfo
+              @taskinfo ||= { topic: 'teamwork.collect.normal', send: true, task_id: name.downcase.gsub('::', '_'), monitor_name: name.downcase.gsub('::', '_') }
             end
 
             # 全局task_id, 用来创建默认collect 任务
             def task_id
-              task_info[:task_id]
+              taskinfo[:task_id]
             end
 
             def monitor_name
-              task_info[:monitor_name]
+              taskinfo[:monitor_name]
             end
 
             def send
-              task_info[:send]
+              taskinfo[:send]
             end
 
             def topic
-              task_info[:topic]
+              taskinfo[:topic]
             end
 
             def basemsg
@@ -44,7 +40,7 @@ module Teamwork
             end
 
             def tasks
-              @_tasks ||= {}
+              @tasks ||= {}
             end
 
             def clean_tasks
@@ -58,7 +54,7 @@ module Teamwork
             end
 
             def children
-              @_children ||= []
+              @children ||= []
             end
           end
 

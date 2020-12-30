@@ -36,8 +36,6 @@ Style/RedundantArgument: # (new in 1.4)
   Enabled: true
 Style/SwapValues: # (new in 1.1)
   Enabled: true
-Metrics/MethodLength:
-  Max: 25
 Metrics/AbcSize:
   Enabled: false
 Metrics/PerceivedComplexity:

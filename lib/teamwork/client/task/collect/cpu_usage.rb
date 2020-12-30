@@ -6,7 +6,7 @@ module Teamwork
       module Collect
         # no doc
         class CpuUsage < Base
-          set_task_info topic: 'teamwork.collect.normal', send: true, task_id: 'teamwork_client_task_collect_cpu_usage'
+          self.taskinfo = { topic: 'teamwork.collect.normal', send: true, task_id: 'teamwork_client_task_collect_cpu_usage' }
 
           # include Teamwork::Callback
           # before :process, :set_meta
