@@ -1,7 +1,10 @@
-require "etcdv3"
+# frozen_string_literal: true
+
+require 'etcdv3'
 
 module Teamwork
   module Task
+    # no doc
     class Etcd
       attr_writer :etcd
 
@@ -19,17 +22,17 @@ module Teamwork
         etcd.children path
       end
 
-      def create(path, value = "")
+      def create(path, value = '')
         etcd.put path, value
       end
 
-      def temp_create(path, value = "")
+      def temp_create(path, value = '')
         temp_hash[path] = value
         etcd.put(path, value, lease: 10)
       end
 
       def sequence_create(path)
-        etcd.put path, "", mode: :persistent_sequential
+        etcd.put path, '', mode: :persistent_sequential
       end
 
       def set(path, value)
@@ -46,54 +49,58 @@ module Teamwork
 
       def get(path)
         etcd.get(path).kvs.first.value
-      rescue
+      rescue StandardError
         nil
       end
 
       def delete(node)
         etcd.del node
-        temp_hash.delete node rescue nil
+        begin
+          temp_hash.delete node
+        rescue StandardError
+          nil
+        end
       end
 
       def mkdir_p(node)
-        etcd.put node , ""
+        etcd.put node, ''
       end
 
       def watch_children(path)
-        etcd.children(path, :watch => true)
+        etcd.children(path, watch: true)
         etcd.register path do |event|
           if event.node_child?
-            etcd.children(path, :watch => true)
+            etcd.children(path, watch: true)
             yield
           end
         end
       end
 
       def watch_create(path)
-        etcd.stat(path, :watch => true)
+        etcd.stat(path, watch: true)
         etcd.register path do |event|
           if event.node_created?
-            etcd.stat(path, :watch => true)
+            etcd.stat(path, watch: true)
             yield
           end
         end
       end
 
       def watch_delete(path)
-        etcd.stat(path, :watch => true)
+        etcd.stat(path, watch: true)
         etcd.register path do |event|
           if event.node_deleted?
-            etcd.stat(path, :watch => true)
+            etcd.stat(path, watch: true)
             yield
           end
         end
       end
 
       def watch_update(path)
-        etcd.stat(path, :watch => true)
+        etcd.stat(path, watch: true)
         etcd.register path do |event|
           if event.node_changed?
-            etcd.stat(path, :watch => true)
+            etcd.stat(path, watch: true)
             yield
           end
         end
@@ -101,19 +108,17 @@ module Teamwork
 
       def etcd
         @etcd ||= begin
-            username = @etcd_opts["username"]
-            password = @etcd_opts["password"]
-            if username
-              Etcdv3.new(endpoints: @etcd_opts["url"].join(","), user: username, password: password)
-            else
-              Etcdv3.new(endpoints: @etcd_opts["url"].join(","))
-            end
+          username = @etcd_opts['username']
+          password = @etcd_opts['password']
+          if username
+            Etcdv3.new(endpoints: @etcd_opts['url'].join(','), user: username, password: password)
+          else
+            Etcdv3.new(endpoints: @etcd_opts['url'].join(','))
           end
+        end
       end
 
-      def temp_hash
-        @temp_hash
-      end
+      attr_reader :temp_hash
 
       def monitor_temp_hash
         Thread.new do

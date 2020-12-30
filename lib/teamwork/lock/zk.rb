@@ -1,10 +1,13 @@
+# frozen_string_literal: true
+
 module Teamwork
   module Lock
+    # no doc
     class Zk
       attr_reader :locker
 
-      def initialize(zk , key)
-        @locker = zk.locker key
+      def initialize(zookeeper, key)
+        @locker = zookeeper.locker key
       end
 
       def lock

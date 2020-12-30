@@ -40,3 +40,22 @@ Metrics/MethodLength:
   Max: 25
 Metrics/AbcSize:
   Enabled: false
+Metrics/PerceivedComplexity:
+    Enabled: false
+Metrics/CyclomaticComplexity:
+    Enabled: false
+Metrics/ModuleLength:
+  Max: 150
+Metrics/ClassLength:
+  Max: 150
+Metrics/MethodLength:
+  Max: 40
+Lint/MissingSuper:
+  Enabled: false
+Naming/AccessorMethodName:
+  Enabled: false
+Style/AsciiComments:
+  Enabled: false
+Layout/LineLength:
+  Max: 250
+

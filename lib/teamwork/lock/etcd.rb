@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 module Teamwork
   module Lock
-    class ZkLock
+    #no doc
+    class Etcd
       attr_reader :locker
 
       def initialize(key, zk: Teamwork.zookeeper)

@@ -1,55 +1,57 @@
+# frozen_string_literal: true
+
 module Teamwork
   module Task
+    # base abstract class
     class Base
-      def initialize
+      def initialize; end
+
+      def queue(_name)
+        raise 'abstract method'
       end
 
-      def queue(name)
-        raise "abstract method"
+      def children(_path)
+        raise 'abstract method'
       end
 
-      def children(path)
-        raise "abstract method"
+      def create(_path)
+        raise 'abstract method'
       end
 
-      def create(path)
-        raise "abstract method"
+      def mkdir_p(_path)
+        raise 'abstract method'
       end
 
-      def mkdir_p(path)
-        raise "abstract method"
+      def temp_create(_path)
+        raise 'abstract method'
       end
 
-      def temp_create(path)
-        raise "abstract method"
+      def sequence_create(_path)
+        raise 'abstract method'
       end
 
-      def sequence_create(path)
-        raise "abstract method"
+      def set(_path, _value)
+        raise 'abstract method'
       end
 
-      def set(path, value)
-        raise "abstract method"
+      def get(_path)
+        raise 'abstract method'
       end
 
-      def get(path)
-        raise "abstract method"
+      def watch_children(_path)
+        raise 'abstract method'
       end
 
-      def watch_children(path)
-        raise "abstract method"
+      def watch_create(_path)
+        raise 'abstract method'
       end
 
-      def watch_create(path)
-        raise "abstract method"
+      def watch_delete(_path)
+        raise 'abstract method'
       end
 
-      def watch_delete(path)
-        raise "abstract method"
-      end
-
-      def watch_update(path)
-        raise "abstract method"
+      def watch_update(_path)
+        raise 'abstract method'
       end
     end
   end

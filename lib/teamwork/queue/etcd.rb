@@ -1,18 +1,21 @@
+# frozen_string_literal: true
+
 module Teamwork
   module Queue
+    # no doc ,  not implemented yet
     class Etcd
-      def initialize(zk, queue_name, queue_root = "/_zkqueues")
+      def initialize(zk, queue_name, queue_root = '/_zkqueues')
         @zk = zk
         @queue = queue_name
         @queue_root = queue_root
-        @zk.create(@queue_root, "", mode: :persistent) unless @zk.exists?(@queue_root)
-        @zk.create(full_queue_path, "", mode: :persistent) unless @zk.exists?(full_queue_path)
+        @zk.create(@queue_root, '', mode: :persistent) unless @zk.exists?(@queue_root)
+        @zk.create(full_queue_path, '', mode: :persistent) unless @zk.exists?(full_queue_path)
       end
 
       def push(data)
         @zk.create("#{full_queue_path}/message", data, mode: :persistent_sequential)
       rescue ZK::Exceptions::NodeExists
-        Teamwork.logger.error "push message to queue failed"
+        Teamwork.logger.error 'push message to queue failed'
         false
       end
 
@@ -42,16 +45,20 @@ module Teamwork
           begin
             data = @zk.get(message_path).first
             if block_given?
-              #Teamwork.logger.info "start handle title #{message_title}"
+              # Teamwork.logger.info "start handle title #{message_title}"
               block.call(message_title, data)
-              #Teamwork.logger.info "end handle title #{message_title}"
+              # Teamwork.logger.info "end handle title #{message_title}"
             else
               return [message_title, data]
             end
-          rescue
+          rescue StandardError
             Teamwork.logger.error "handle title #{message_title}  error"
           ensure
-            @zk.delete(message_path) rescue nil  # 处理完成,删除queue
+            begin
+              @zk.delete(message_path)
+            rescue StandardError
+              nil
+            end
             locker.unlock!
           end
         end

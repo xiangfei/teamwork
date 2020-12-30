@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Teamwork
   module Client
     module Task
@@ -22,20 +24,20 @@ module Teamwork
             end
           end
 
-          attr_reader :taskid
+          attr_reader :taskid, :key, :expect, :severity, :message
 
-          def initialize(collecttaskid, key, value, alarm_class, severity = "level_high", message = "message  handler problem")
+          def initialize(collecttaskid, key, value, alarm_class, severity = 'level_high', message = 'message  handler problem')
             @taskid = "alarm__#{key}__#{collecttaskid}"
             @collecttaskid = collecttaskid
             @key = key
             @expect = value
             @severity = severity
             @message = message
-            if alarm_class.is_a? String
-              @alarm_class = eval(alarm_class)
-            else
-              @alarm_class = alarm_class
-            end
+            @alarm_class = if alarm_class.is_a? String
+                             Object.const_get(alarm_class)
+                           else
+                             alarm_class
+                           end
           end
 
           def process(ops = {})
@@ -47,61 +49,43 @@ module Teamwork
           end
 
           def run(args = {})
-            begin
-              record_alarm
-              process_alarm
-              process args
-              Teamwork.cache.set taskid, msg
-            rescue => e
-              Teamwork.logger.error("handler alarm failed  #{e.message}")
-            end
+            record_alarm
+            process_alarm
+            process args
+            Teamwork.cache.set taskid, msg
+          rescue StandardError => e
+            Teamwork.logger.error("handler alarm failed  #{e.message}")
           end
 
           def process_alarm
             if @al.first_alarm?
-              Teamwork.message.deliver_message msg, topic: "teamwork.historyalarm"
-              Teamwork.message.deliver_message msg, topic: "teamwork.realalarm"
-              Teamwork.message.deliver_message msg, topic: "teamwork.notify"
+              Teamwork.message.deliver_message msg, topic: 'teamwork.historyalarm'
+              Teamwork.message.deliver_message msg, topic: 'teamwork.realalarm'
+              Teamwork.message.deliver_message msg, topic: 'teamwork.notify'
             elsif @al.config_alarm?
-              Teamwork.message.deliver_message msg, topic: "teamwork.historyalarm"
-              Teamwork.message.deliver_message msg, topic: "teamwork.notify"
+              Teamwork.message.deliver_message msg, topic: 'teamwork.historyalarm'
+              Teamwork.message.deliver_message msg, topic: 'teamwork.notify'
             elsif @al.first_recovered?
-              Teamwork.message.deliver_message msg, topic: "teamwork.historyalarm"
-              Teamwork.message.deliver_message msg, topic: "teamwork.realalarm"
-              Teamwork.message.deliver_message msg, topic: "teamwork.notify"
+              Teamwork.message.deliver_message msg, topic: 'teamwork.historyalarm'
+              Teamwork.message.deliver_message msg, topic: 'teamwork.realalarm'
+              Teamwork.message.deliver_message msg, topic: 'teamwork.notify'
             elsif @al.many_alarm?
-              Teamwork.message.deliver_message msg, topic: "teamwork.historyalarm"
+              Teamwork.message.deliver_message msg, topic: 'teamwork.historyalarm'
             elsif @al.many_recovered?
               Teamwork.logger.info "alarm  #{@al.detail} is not an alarm"
             end
           end
 
           def msg
-            @al.detail.merge! "alarm_task_id" => @taskid
+            @al.detail.merge! 'alarm_task_id' => @taskid
           end
 
           def cache
             Teamwork.cache.get(@collecttaskid)
           end
 
-          def key
-            @key
-          end
-
           def real
             cache[key]
-          end
-
-          def expect
-            @expect
-          end
-
-          def severity
-            @severity
-          end
-
-          def message
-            @message
           end
         end
       end

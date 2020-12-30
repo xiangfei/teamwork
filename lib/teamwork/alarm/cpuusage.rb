@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 module Teamwork
   module Alarm
+    # no doc
     class Cpuusage < Base
-      # cpu 实际 大于期望 告警
       def alarm?
         @expected < @real
       end

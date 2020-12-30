@@ -3,13 +3,12 @@
 require 'socket'
 
 module Teamwork
+  # no doc
   module Utils
     class << self
       link = ::Socket::PF_LINK if ::Socket.const_defined? :PF_LINK
       packet = ::Socket::PF_PACKET if ::Socket.const_defined? :PF_PACKET
       INTERFACE_PACKET_FAMILY = link || packet
-
-      # 多网卡可能有问题
       def ip
         @ip ||= begin
           Teamwork.logger.warn 'ip method 多网卡可能有问题'
@@ -18,7 +17,6 @@ module Teamwork
         end
       end
 
-      # 多网卡可能有问题
       def mac
         @mac ||= begin
           Teamwork.logger.warn 'mac method多网卡可能有问题'
@@ -109,20 +107,9 @@ module Teamwork
             Teamwork.logger.error "run command failed  #{cmd} result #{result}"
             return false, result
           end
-        ensure
-          begin
-            stdin.close
-          rescue StandardError
-            nil
-          end
-          begin
-            stderr.close
-          rescue StandardError
-            nil
-          end
         end
       rescue StandardError => e
-        Teamwork.logger.error "run command exception  #{cmd} result #{e.message}"
+        Teamwork.logger.error "run command failed  #{cmd} result #{e.message}"
         [false, e.message]
       end
     end

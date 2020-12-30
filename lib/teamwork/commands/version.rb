@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 module Teamwork
   module Commands
+    # no doc
     class Version < CommandBase
-      desc "Print version"
+      desc 'Print version'
 
       def call
         puts Teamwork::VERSION

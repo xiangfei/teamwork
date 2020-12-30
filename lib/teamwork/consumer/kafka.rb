@@ -1,7 +1,10 @@
-require "kafka"
+# frozen_string_literal: true
+
+require 'kafka'
 
 module Teamwork
   module Consumer
+    # no doc
     class Kafka
       def initialize(kafka_url)
         @kafka = ::Kafka.new(kafka_url)
@@ -33,7 +36,7 @@ module Teamwork
       end
 
       def find_monitor(topic)
-        mon = monitor_list.find do |monitor| monitor[0] == topic end
+        monitor_list.find { |monitor| monitor[0] == topic }
       end
 
       def start_monitor(topic)
@@ -63,34 +66,33 @@ module Teamwork
       # use async monitor
       def monitor(topic, group = nil, &block)
         Thread.new do
-          begin
-            group_id = group ? group : "#{topic}.group"
-            Teamwork.logger.info "监控#{topic} group:#{group_id}"
-            cm = @kafka.consumer(group_id: "#{group_id}", offset_commit_interval: 5, offset_commit_threshold: 100, offset_retention_time: 7 * 60 * 60)
-            cm.subscribe(topic)
-            monitor_hash[topic] = cm
-            #  cm.each_message do |message|
-            #    #cm.mark_message_as_processed(message)
-            #    #cm.commit_offsets
-            #    block.call message if block_given?
-            #    cm.mark_message_as_processed(message)
-            #    cm.commit_offsets
-            #  end
-            cm.each_batch do |batch|
-              batch.messages.each do |message|
-                block.call message if block_given?
-              end
+          group_id = group || "#{topic}.group"
+          Teamwork.logger.info "监控#{topic} group:#{group_id}"
+          cm = @kafka.consumer(group_id: group_id.to_s, offset_commit_interval: 5, offset_commit_threshold: 100,
+                               offset_retention_time: 7 * 60 * 60)
+          cm.subscribe(topic)
+          monitor_hash[topic] = cm
+          #  cm.each_message do |message|
+          #    #cm.mark_message_as_processed(message)
+          #    #cm.commit_offsets
+          #    block.call message if block_given?
+          #    cm.mark_message_as_processed(message)
+          #    cm.commit_offsets
+          #  end
+          cm.each_batch do |batch|
+            batch.messages.each do |message|
+              block.call message if block_given?
             end
-          rescue StandardError => e
-            Teamwork.logger.error "monitor topic failed #{topic} , sleep 10 and try monitor again #{e} "
-            sleep 10
-            retry
           end
+        rescue StandardError => e
+          Teamwork.logger.error "monitor topic failed #{topic} , sleep 10 and try monitor again #{e} "
+          sleep 10
+          retry
         end
       end
 
       def monitor_list
-        @montior_list ||= []
+        @monitor_list ||= []
       end
 
       def monitor_hash
@@ -98,14 +100,12 @@ module Teamwork
       end
 
       def producer
-        #@producer ||= Teamwork.kafka.producer(max_retries: 5, retry_backoff: 5)
+        # @producer ||= Teamwork.kafka.producer(max_retries: 5, retry_backoff: 5)
         @producer ||= Teamwork.kafka.async_producer(delivery_threshold: 100, delivery_interval: 5)
       end
 
-      def synchronized
-        mutex.synchronize do
-          yield
-        end
+      def synchronized(&block)
+        mutex.synchronize(&block)
       end
 
       def mutex

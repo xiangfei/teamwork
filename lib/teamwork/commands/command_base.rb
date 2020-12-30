@@ -1,11 +1,14 @@
-require "dry/cli"
+# frozen_string_literal: true
+
+require 'dry/cli'
 
 module Teamwork
+  # no doc
   module Commands
     extend Dry::CLI::Registry
-
+    # no doc
     class CommandBase < Dry::CLI::Command
-      desc "command base "
+      desc 'command base '
       class << self
         attr_reader :type
 
@@ -19,7 +22,7 @@ module Teamwork
       end
 
       def call
-        raise "abstract method"
+        raise 'abstract method'
       end
 
       def info
@@ -32,15 +35,16 @@ module Teamwork
         ::Process.daemon(true)
         File.open(
           "#{self.class.pid_base}/#{self.class.type}",
-          "w"
+          'w'
         ) { |file| file.write(::Process.pid) }
       end
 
       def can_start
-        unless find_process.empty?
-          puts "already started  pid list #{find_process}"
-          exit 1
-        end
+        return true if find_process.empty?
+
+        puts "already started  pid list #{find_process}"
+        # exit 1
+        Process.kill('TERM', ::Process.pid)
       end
 
       def status
@@ -58,16 +62,21 @@ module Teamwork
           puts "#{self.class.type} current running: pid is #{find_process[0]} "
           exit
         else
-          puts "#{self.class.type} current running: pid is #{find_process[0]} ,  not run with command teamwork #{self.class.type} start"
+          puts "#{self.class.type} current running: pid is #{find_process[0]}"
+          puts " not run with command teamwork #{self.class.type} start"
         end
       end
 
       def clear_pid_file
-        File.delete(pid_file) rescue nil
+        File.delete(pid_file)
+      rescue StandardError
+        nil
       end
 
       def read_pid
-        File.read(pid_file).to_i rescue nil
+        File.read(pid_file).to_i
+      rescue StandardError
+        nil
       end
 
       def pid_file
@@ -76,11 +85,15 @@ module Teamwork
 
       def find_process
         list = []
-        st, value = Teamwork::Utils.old_linux_command("ps aux | grep #{self.class.type} | grep -v grep")
+        st, value = Teamwork::Utils.old_linux_command("ps aux | grep #{self.class.type} | grep teamwork | grep -v grep")
+        unless st
+          Teamwork.logger.error("find process failed  #{value}")
+          return list
+        end
         value.each_line do |line|
           list << line.split[1].to_i
         end
-        list.select do |x| x != Process.pid end
+        list.reject { |x| x == Process.pid }
       end
     end
   end

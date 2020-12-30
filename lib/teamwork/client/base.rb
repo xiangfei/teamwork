@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 module Teamwork
   module Client
+    # no doc
     class Base
       class << self
         attr_reader :_client_path, :_task_queue, :_task_path, :_config_path, :_config
@@ -10,32 +13,30 @@ module Teamwork
 
         def set_task_path(path)
           @_task_path ||= begin
-              Teamwork.task.mkdir_p path
-              path
-            end
+            Teamwork.task.mkdir_p path
+            path
+          end
         end
 
         # 配置文件需要监听
         def set_config_path(path)
           @_config_path ||= begin
-              Teamwork.task.mkdir_p path
-              path
-            end
+            Teamwork.task.mkdir_p path
+            path
+          end
         end
 
         def set_client_path(path)
           @_client_path ||= begin
-              Teamwork.task.mkdir_p path
-              path
-            end
+            Teamwork.task.mkdir_p path
+            path
+          end
         end
 
         def create_and_watch_default_config(opts = {})
           if Teamwork.task.exists? config_path
             t = Teamwork.task.get config_path
-            unless t
-              create_config opts
-            end
+            create_config opts unless t
           else
             create_config opts
           end
@@ -44,32 +45,38 @@ module Teamwork
         end
 
         def queue
-          raise "not define queue" unless defined? @_task_queue
+          raise 'not define queue' unless defined? @_task_queue
+
           @_task_queue
         end
 
         def client_path
-          raise "not define client path" unless defined? @_client_path
+          raise 'not define client path' unless defined? @_client_path
+
           @_client_path
         end
 
         def task_path
-          raise "not define task path" unless defined? @_task_path
+          raise 'not define task path' unless defined? @_task_path
+
           @_task_path
         end
 
         def config_path
-          raise "not define config path" unless defined? @_config_path
+          raise 'not define config path' unless defined? @_config_path
+
           @_config_path
         end
 
         def config
-          raise "not define config " unless defined? @_config
+          raise 'not define config ' unless defined? @_config
+
           @_config
         end
 
         def client_id
-          raise "not define client path" unless defined? @_client_path
+          raise 'not define client path' unless defined? @_client_path
+
           @client_id ||= "#{@_client_path}/#{Teamwork::Utils.mac}"
         end
 
@@ -77,16 +84,12 @@ module Teamwork
 
         def create_task(task_id, opts = {})
           full_path = "#{task_path}/#{task_id}"
-          if Teamwork.task.exists? full_path
-            Teamwork.task.delete full_path
-          end
+          Teamwork.task.delete full_path if Teamwork.task.exists? full_path
           Teamwork.task.create full_path, opts.to_json
         end
 
         def create_config(opts = {})
-          if Teamwork.task.exists? config_path
-            Teamwork.task.delete config_path
-          end
+          Teamwork.task.delete config_path if Teamwork.task.exists? config_path
           Teamwork.task.create config_path, opts.to_json
         end
 
@@ -98,7 +101,8 @@ module Teamwork
       end
 
       def initialize
-        raise "abstract class cannot initialize" if self.class == Teamwork::Client::Base
+        raise 'abstract class cannot initialize' if instance_of?(Teamwork::Client::Base)
+
         @register = false
         @running = true
         register
@@ -106,15 +110,13 @@ module Teamwork
       end
 
       def register
-        begin
-          Teamwork.task.temp_create(self.class.client_id)
-          @register = true
-          Teamwork.logger.info "NODE: #{self.class.client_id} 注册成功. "
-        rescue => e
-          Teamwork.logger.error "NODE: #{self.class.client_id} 注册失败. #{e.message}"
-          client_stop
-          @register = false
-        end
+        Teamwork.task.temp_create(self.class.client_id)
+        @register = true
+        Teamwork.logger.info "NODE: #{self.class.client_id} 注册成功. "
+      rescue StandardError => e
+        Teamwork.logger.error "NODE: #{self.class.client_id} 注册失败. #{e.message}"
+        client_stop
+        @register = false
       end
 
       def listen_stop
@@ -129,15 +131,13 @@ module Teamwork
       end
 
       def join
-        #Thread.new do
-        #while @running
+        # Thread.new do
+        # while @running
         #  sleep 300
-        #GC.start
-        #end
-        #end
-        while @running
-          sleep 1
-        end
+        # GC.start
+        # end
+        # end
+        sleep 1 while @running
       end
     end
   end
