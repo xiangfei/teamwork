@@ -3,12 +3,12 @@
 module Teamwork
   module Validator
     # no doc
-    class Collect < Required
+    class Alarm < Required
       # only check required
 
       def initialize(opts = {})
         @opts = opts
-        @required = %w[monitor_name task_id type]
+        @required = %w[severity collect_task_id key expect alarm_class]
       end
 
     end
