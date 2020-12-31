@@ -36,14 +36,10 @@ module Teamwork
         end
 
         def refine_method(meth)
-          puts "method #{meth} refined"
-          puts  "#{before_callback_methods(meth)} before"
-          puts  "#{after_callback_methods(meth)} after"
           @refined = true
           original = instance_method(meth)
           remove_method(meth)
           define_method meth do
-            puts "#{self.class.before_callback_methods(meth)} instance"
             self.class.before_callback_methods(meth).each do |m|
               send m
             end
