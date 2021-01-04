@@ -66,6 +66,7 @@ module Teamwork
             raise 'abstract  method cannot run'
           end
 
+          # args 分类, base , meta , base 信息需要返回, meta 信息处理不需要处理
           def run(args = {})
             begin
               @_m.merge! self.class.basemsg

@@ -15,12 +15,58 @@ module Teamwork
       set_task_path "/teamwork/task/collect/#{Teamwork::Utils.mac}"
 
       create_collect_task Teamwork::Client::Task::Collect::CpuUsage.task_id,
-                          { time: 20, opt: 'every', method: 'run', cls: 'Teamwork::Client::Task::Collect::CpuUsage',
-                            args: { alarms: [{ alarm_class: 'Teamwork::Alarm::Cpuusage', key: 'cpu_load_5', severity: 'level_high', message: 'cpu 负载过高', value: 0.001 }] } }
+                          {
+                            time: 20,
+                            opt: 'every',
+                            method: 'run',
+                            cls: 'Teamwork::Client::Task::Collect::CpuUsage',
+                            args: {
+                              alarms: [
+                                {
+                                  alarm_class: 'Teamwork::Alarm::Cpuusage',
+                                  key: 'cpu_load_5',
+                                  severity: 'level_high',
+                                  message: 'cpu 负载过高',
+                                  value: 0.001
+                                }
+                              ],
+                              recovers: [],
+                              base: {
+                                task_id: 'cpu_usage',
+                                type: 'resource',
+                                'monitor_name': 'cpu monitor'
+
+                              },
+                              meta: {}
+                            }
+                          }
       1.upto 100 do |i|
         create_collect_task "cpuusage_#{i}",
-                            { time: 20, opt: 'every', method: 'run', cls: 'Teamwork::Client::Task::Collect::CpuUsage',
-                              args: { task_id: "cpuusage_#{i}", monitor_name: "cpuusage_#{i}", alarms: [{ alarm_class: 'Teamwork::Alarm::Cpuusage', key: 'cpu_load_5', severity: 'level_high', message: 'cpu 负载过高', value: 0.001 }] } }
+                            {
+                              time: 20,
+                              opt: 'every',
+                              method: 'run',
+                              cls: 'Teamwork::Client::Task::Collect::CpuUsage',
+                              args: {
+                                base: {
+                                  monitor_name: "cpuusage_#{i}",
+                                  type: 'resource',
+                                  task_id: "cpuusage_#{i}"
+                                },
+                                meta: {},
+                                alarms: [
+                                  {
+                                    alarm_class: 'Teamwork::Alarm::Cpuusage',
+                                    key: 'cpu_load_5',
+                                    severity: 'level_high',
+                                    message: 'cpu 负载过高',
+                                    value: 0.001
+                                  }
+                                ],
+                                recovers: []
+                              }
+
+                            }
       end
 
       def initialize
@@ -62,7 +108,7 @@ module Teamwork
           case opt
           when 'every'
             @rufus_scheduler.add path, timeout: hash_task['time'], every: hash_task['time'] do
-              cls = Object.const_get(hash_task['cls']) 
+              cls = Object.const_get(hash_task['cls'])
               cls.find(path).send hash_task['method'], hash_task['args']
             end
           # when 'cron'

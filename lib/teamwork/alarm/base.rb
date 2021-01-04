@@ -6,7 +6,7 @@ module Teamwork
     class Base
       class << self
         def alarm_config
-          Teamwork::Client::Alarm.config
+          Teamwork::Client::Config::Alarm.config
         end
 
         def find(remarked_id)

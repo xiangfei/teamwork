@@ -20,7 +20,7 @@ module Teamwork
               watch
               begin
                 Teamwork.task.get(path)
-              rescue StandardError
+              rescue StandardError => e
                 Teamwork.logger.error("get path #{path} config failed")
                 {}
               end
@@ -36,6 +36,11 @@ module Teamwork
                 {}
               end
             end
+          end
+
+          def create_default_config(opts = {})
+            Teamwork.task.mkdir_p path  unless Teamwork.task.exists? path
+            Teamwork.task.set path, opts.to_json if config.empty?
           end
         end
       end

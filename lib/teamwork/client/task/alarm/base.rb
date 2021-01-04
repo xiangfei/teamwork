@@ -54,6 +54,7 @@ module Teamwork
             process args
             Teamwork.cache.set taskid, msg
           rescue StandardError => e
+            puts e.backtrace
             Teamwork.logger.error("handler alarm failed  #{e.message}")
           end
 
